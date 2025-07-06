@@ -13,25 +13,31 @@ A simple Redis-like in-memory database server implemented in C++ for Windows.
 
 ## Building
 
+### Using g++ (GNU C++ Compiler)
+
 ```bash
-make
+# Compile the server
+g++ -std=c++11 -pthread -o redis_server.exe server.cpp hashtable.cpp heap.cpp thread_pool.cpp zset.cpp avl.cpp
+
+# Compile the client
+g++ -std=c++11 -o client.exe client.cpp
 ```
 
-This will build both `redis_server.exe` and `client.exe`.
+### Using Visual Studio (Windows)
 
-## Running
-
-1. Start the server:
-```bash
-./redis_server.exe
+1. Open Developer Command Prompt
+2. Navigate to project directory
+3. Run:
+```cmd
+cl /EHsc server.cpp hashtable.cpp heap.cpp thread_pool.cpp zset.cpp avl.cpp /Fe:redis_server.exe
+cl /EHsc client.cpp /Fe:client.exe
 ```
 
-The server will listen on port 6379.
+### Prerequisites
 
-2. Run the test client:
-```bash
-./client.exe
-```
+- C++11 compatible compiler (g++ or MSVC)
+- Windows OS (for select() and Windows-specific APIs)
+
 
 ## Protocol
 
