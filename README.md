@@ -38,6 +38,13 @@ cl /EHsc client.cpp /Fe:client.exe
 - C++11 compatible compiler (g++ or MSVC)
 - Windows OS (for select() and Windows-specific APIs)
 
+## Running
+
+1. **Start the server**: `./redis_server.exe` (listens on port 6379)
+2. **Run the client**: `./client.exe` (connects to localhost:6379)
+3. **Use Redis commands**: SET, GET, DEL, ZADD, ZSCORE, KEYS, etc.
+4. **Stop server**: Press `Ctrl+C` in server terminal
+5. **Stop client**: Type `quit` or press `Ctrl+C` in client terminal
 
 ## Protocol
 
