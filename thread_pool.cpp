@@ -1,5 +1,7 @@
 #include <cassert>
+#include <thread>
 #include <mutex>
+#include <condition_variable>
 #include "thread_pool.h"
 
 static void worker(TheadPool* tp) {

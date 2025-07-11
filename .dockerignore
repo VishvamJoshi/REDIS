@@ -1,0 +1,19 @@
+# Ignore build artifacts and executables
+*.exe
+
+*.o
+*.obj
+*.log
+
+# Ignore version control
+.git
+.gitignore
+
+# Ignore OS files
+*.DS_Store
+Thumbs.db
+desktop.ini
+
+# Ignore Docker files (optional)
+Dockerfile
+.dockerignore 
