@@ -13,6 +13,13 @@ A simple Redis-like in-memory database server implemented in C++ for Windows.
 
 ## Building
 
+### using g++ cmakelists
+    mkdir build
+    cd build
+    cmake .. -G "MinGW Makefiles"
+    mingw32-make
+
+    
 ### Using g++ (GNU C++ Compiler)
 
 ```bash
