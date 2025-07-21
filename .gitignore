@@ -1,0 +1,38 @@
+# =================================
+#      CMake and Build Files
+# =================================
+# Ignore the entire build directory where all compiled files are stored.
+/build/
+
+# Ignore CMake-generated files that might end up in the root directory.
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+compile_commands.json
+
+# =================================
+#      Compiled Binaries
+# =================================
+# Ignore executables, libraries, and object files.
+*.exe
+*.dll
+*.lib
+*.a
+*.so
+*.o
+*.obj
+
+# =================================
+#   User-Specific Editor Files
+# =================================
+# Ignore settings for common editors like VS Code.
+.vscode/
+
+# =================================
+#       System/OS Files
+# =================================
+# Ignore Windows thumbnail cache files.
+Thumbs.db
+
+# Ignore macOS system files.
+.DS_Store
