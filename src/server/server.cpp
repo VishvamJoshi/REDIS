@@ -573,27 +573,74 @@ static std::string strip_quotes(const std::string& s) {
 
 static void do_append(std::vector<std::string> &cmd, Buffer &out)
 {
-    if (cmd.size() < 3) {
-        return out_err(out, ERR_BAD_ARG, "missing value to append");
+
+    
+    if(cmd.size() < 3){
+        return out_err(out, ERR_BAD_ARG, "missing value to set");
     }
 
-    std::string str = cmd[2];
+    // a dummy struct just for the lookup
+    std::string str = ""; 
 
-   
-    if(cmd.size() > 3){
-        std::string str2 = cmd[cmd.size() - 1];
-        if (str.front() != '"' || str2.back() != '"') {
+    for(int i=1;i<cmd.size();i++){
+        str += cmd[i] + " "; 
+    }
+    str.pop_back();
+
+    std::string curr_key = "";
+    std::string curr_val = "";
+    std::string tmp_val;
+
+   if(str[0] == '"'){
+        auto pos = str.find('"', 1);
+        if(pos != std::string::npos || str[pos + 1] == ' ') {
+            curr_key = str.substr(1, pos - 1);
+
+            size_t next_space = str.find_first_not_of(' ', pos + 1);
+            if (next_space != std::string::npos) {
+                tmp_val = str.substr(next_space);
+            } else {
             return out_err(out, ERR_BAD_ARG, "expect quoted string");
         }
-    
-        for (int i = 3; i < cmd.size(); i++) {
-            str.append(" ");
-            str.append(cmd[i]);
+            std::cout<<"curr_key:" << curr_key << std::endl;
+            std::cout<<"tmp_val:" << tmp_val << std::endl;
+        } else {
+            return out_err(out, ERR_BAD_ARG, "expect quoted string");
+        }
+   }
+   else{
+    curr_key = str.substr(0, str.find(' '));
+    tmp_val = str.substr(str.find(' ') + 1);
+}
+    if(tmp_val[0] == '"'){
+        auto pos = tmp_val.find('"', 1);
+        if(pos == tmp_val.size()-1) {
+            curr_val = tmp_val.substr(1, pos - 1);
+        } else {
+            return out_err(out, ERR_BAD_ARG, "expect quoted string");
         }
     }
+    else{
+        std::cout << tmp_val.find(' ',1) << std::endl;
+        std::cout << tmp_val << std::endl;
+        if(tmp_val.find(' ',1) == std::string::npos){
+            curr_val = tmp_val.substr(0, tmp_val.find(' '));
+            std::cout<<"code ni "<<std::endl;
+            std::cout << "curr_val: " << curr_val << std::endl;
+        }
+        else{
+            return out_err(out, ERR_BAD_ARG, "syntax error, expect quoted string");
+        }
+    }
+    if(curr_key.empty() || curr_val.empty()){
+        return out_err(out, ERR_BAD_ARG, "expect quoted string");
+    }
+
+    std::cout<<curr_key<<std::endl;
+   
     // hashtable lookup
     LookupKey key;
-    key.key = cmd[1];
+    key.key = curr_key;
     key.node.hcode = str_hash((uint8_t *)key.key.data(), key.key.size());
     HNode *node = hm_lookup(&g_data.db, &key.node, &entry_eq);
     if (node)
@@ -607,7 +654,7 @@ static void do_append(std::vector<std::string> &cmd, Buffer &out)
         // Remove quotes from existing value and new value, then concatenate and re-wrap
         std::string existing = strip_quotes(ent->str);
         std::string to_append = strip_quotes(str);
-        ent->str = "\"" + existing + to_append + "\"";
+        ent->str = "\"" + existing + curr_val + "\"";
     }
     else
     {
@@ -616,7 +663,7 @@ static void do_append(std::vector<std::string> &cmd, Buffer &out)
         Entry *ent = entry_new(T_STR);
         ent->key = key.key;
         ent->node.hcode = key.node.hcode;
-        ent->str = "\"" + to_append + "\"";
+        ent->str = "\"" + curr_val + "\"";
         hm_insert(&g_data.db, &ent->node);
     }
     return out_nil(out);
