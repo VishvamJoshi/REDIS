@@ -600,8 +600,8 @@ static void do_append(std::vector<std::string> &cmd, Buffer &out)
             if (next_space != std::string::npos) {
                 tmp_val = str.substr(next_space);
             } else {
-            return out_err(out, ERR_BAD_ARG, "expect quoted string");
-        }
+               return out_err(out, ERR_BAD_ARG, "expect quoted string");
+            }
             std::cout<<"curr_key:" << curr_key << std::endl;
             std::cout<<"tmp_val:" << tmp_val << std::endl;
         } else {
