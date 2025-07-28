@@ -18,6 +18,8 @@
 // system
 #include <time.h>
 #include <fcntl.h>
+#include <psapi.h> 
+
 
 // C++
 #include <iostream>
@@ -124,6 +126,10 @@ static struct
 
     std::map<std::string, std::vector<Conn *>> pubsub_channels;
 } g_data;
+
+
+
+
 
 // application callback when the listening socket is ready
 static int32_t handle_accept(SOCKET fd)
@@ -409,6 +415,17 @@ static bool entry_eq(HNode *node, HNode *key)
     struct Entry *ent = container_of(node, struct Entry, node);
     struct LookupKey *keydata = container_of(key, struct LookupKey, node);
     return ent->key == keydata->key;
+}
+
+static void do_memory(Buffer &out) {
+    PROCESS_MEMORY_COUNTERS_EX pmc;
+    if (GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS*)&pmc, sizeof(pmc))) {
+        // Report private usage in megabytes (MB)
+        int64_t mem_in_mb = pmc.PrivateUsage / (1024 * 1024);
+        out_int(out, mem_in_mb);
+    } else {
+        out_err(out, ERR_UNKNOWN, "Could not retrieve memory info.");
+    }
 }
 
 static void do_get(std::vector<std::string> &cmd, Buffer &out)
@@ -1189,6 +1206,8 @@ static void do_request(Conn *conn , std::vector<std::string> &cmd, Buffer &out)
     }
 
 
+
+
     if (cmd.size() >= 2 && str == "get")
     {
         return do_get(cmd, out);
@@ -1235,6 +1254,10 @@ static void do_request(Conn *conn , std::vector<std::string> &cmd, Buffer &out)
     else if (cmd.size() == 6 && str == "zquery")
     {
         return do_zquery(cmd, out);
+    }
+    else if (cmd.size() == 1 && str == "memory")
+    {
+        return do_memory(out);
     }
     else if (cmd.size() == 1 && str == "shutdown")
     {
