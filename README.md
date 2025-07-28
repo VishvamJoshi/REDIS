@@ -56,9 +56,7 @@ mingw32-make
 
 # On Linux
 make
-
-
-
+```
 
 ## Protocol
 
@@ -111,12 +109,16 @@ The server uses a custom binary protocol:
 - `PEXPIRE key ttl_ms` - Set TTL in milliseconds
 - `PTTL key` - Get remaining TTL in milliseconds
 
+### Pub/Sub
+- `SUBSCRIBE channel` - Subscribe to a channel
+- `PUBLISH channel message` - Publish a message to a channel
+
 ### Utility
 - `KEYS` - List all keys in database
 
 ## Architecture
 
-- **Event Loop**: Uses select() for I/O multiplexing
+- **Event Loop**: Uses `select()` for I/O multiplexing
 - **Connection Management**: Automatic cleanup of idle connections
 - **Memory Management**: Thread pool for large data structure cleanup
 - **Data Structures**: Custom hashtable, AVL tree, and heap implementations
@@ -130,4 +132,4 @@ The server uses a custom binary protocol:
 - `heap.h/cpp` - Min-heap for TTL management
 - `thread_pool.h/cpp` - Thread pool for background tasks
 - `common.h` - Common definitions and macros
-- `list.h` - Doubly-linked list implementation 
+- `list.h` - Doubly-linked list implementation
