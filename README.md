@@ -36,8 +36,8 @@ The recommended way to build the project is with CMake, which supports various c
 
 ```bash
 # 1. Clone the repository
-git clone <your-repo-url>
-cd <your-repo-directory>
+git clone <repo-url>
+cd <repo-directory>
 
 # 2. Create and navigate to the build directory
 mkdir build
