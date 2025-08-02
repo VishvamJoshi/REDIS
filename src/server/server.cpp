@@ -430,153 +430,83 @@ static void do_memory(Buffer &out) {
 
 static void do_get(std::vector<std::string> &cmd, Buffer &out)
 {
-
-
-    std::string curr_key = "";
-
-    std::string str = ""; 
-
-    for(int i=1;i<cmd.size();i++){
-        str += cmd[i] + " "; 
-    }
-    str.pop_back();
-
-    if(str[0] == '"'){
-        auto pos = str.find('"', 1);
-        if(pos != std::string::npos && pos == str.size() - 1) {
-            curr_key = str.substr(1, pos - 1);
-        } else {
-            std::cout << "pos: err1 " << pos << std::endl;
-            return out_err(out, ERR_BAD_ARG, "expect quoted string");
-        }
-    }
-    else{
-        if(str.size() > 1 ){
-            
-            return out_err(out, ERR_BAD_ARG, "expect quoted string");
-        }
-        curr_key = str.substr(0, str.find(' '));
-    }
-    if(curr_key.empty()){
-        return out_err(out, ERR_BAD_ARG, "expect quoted string");
+    if (cmd.size() < 2) {
+        return out_err(out, ERR_BAD_ARG, "missing key to get");
     }
 
-    std::cout << "curr_key: " << curr_key << std::endl;
+    std::string curr_key = cmd[1];
 
-    // a dummy struct just for the lookup
+    // Remove quotes if present
+    if (curr_key.size() >= 2 && curr_key.front() == '"' && curr_key.back() == '"') {
+        curr_key = curr_key.substr(1, curr_key.size() - 2);
+    }
+
+    if (curr_key.empty()) {
+        return out_err(out, ERR_BAD_ARG, "invalid key");
+    }
+
+    // Lookup key in the hashtable
     LookupKey key;
     key.key = curr_key;
     key.node.hcode = str_hash((uint8_t *)key.key.data(), key.key.size());
-    // hashtable lookup
     HNode *node = hm_lookup(&g_data.db, &key.node, &entry_eq);
-    if (!node)
-    {
-        return out_nil(out);
+
+    if (!node) {
+        return out_nil(out); // Key not found
     }
-    // copy the value
+
+    // Retrieve the value
     Entry *ent = container_of(node, Entry, node);
-    if (ent->type != T_STR)
-    {
+    if (ent->type != T_STR) {
         return out_err(out, ERR_BAD_TYP, "not a string value");
     }
+
     return out_str(out, ent->str.data(), ent->str.size());
 }
 
 static void do_set(std::vector<std::string> &cmd, Buffer &out)
 {
-
-    
-    if(cmd.size() < 3){
-        return out_err(out, ERR_BAD_ARG, "missing value to set");
+    if (cmd.size() < 3) {
+        return out_err(out, ERR_BAD_ARG, "missing key or value to set");
     }
 
-    // a dummy struct just for the lookup
-    std::string str = ""; 
+    std::string curr_key = cmd[1];
+    std::string curr_val = cmd[2];
 
-    for(int i=1;i<cmd.size();i++){
-        str += cmd[i] + " "; 
+    // Remove quotes if present
+    if (curr_key.size() >= 2 && curr_key.front() == '"' && curr_key.back() == '"') {
+        curr_key = curr_key.substr(1, curr_key.size() - 2);
     }
-    str.pop_back();
-
-    std::string curr_key = "";
-    std::string curr_val = "";
-    std::string tmp_val;
-
-   if(str[0] == '"'){
-        auto pos = str.find('"', 1);
-        if(pos != std::string::npos || str[pos + 1] == ' ') {
-            curr_key = str.substr(1, pos - 1);
-
-            size_t next_space = str.find_first_not_of(' ', pos + 1);
-            if (next_space != std::string::npos) {
-                tmp_val = str.substr(next_space);
-            } else {
-               return out_err(out, ERR_BAD_ARG, "expect quoted string");
-            }
-            std::cout<<"curr_key:" << curr_key << std::endl;
-            std::cout<<"tmp_val:" << tmp_val << std::endl;
-        } else {
-            return out_err(out, ERR_BAD_ARG, "expect quoted string");
-        }
-   }
-   else{
-    curr_key = str.substr(0, str.find(' '));
-    tmp_val = str.substr(str.find(' ') + 1);
-}
-    if(tmp_val[0] == '"'){
-        auto pos = tmp_val.find('"', 1);
-        if(pos == tmp_val.size()-1) {
-            curr_val = tmp_val.substr(1, pos - 1);
-        } else {
-            return out_err(out, ERR_BAD_ARG, "expect quoted string");
-        }
-    }
-    else{
-        std::cout << tmp_val.find(' ',1) << std::endl;
-        std::cout << tmp_val << std::endl;
-        if(tmp_val.find(' ',1) == std::string::npos){
-            curr_val = tmp_val.substr(0, tmp_val.find(' '));
-            std::cout<<"code ni "<<std::endl;
-            std::cout << "curr_val: " << curr_val << std::endl;
-        }
-        else{
-            return out_err(out, ERR_BAD_ARG, "syntax error, expect quoted string");
-        }
-    }
-    if(curr_key.empty() || curr_val.empty()){
-        return out_err(out, ERR_BAD_ARG, "expect quoted string");
+    if (curr_val.size() >= 2 && curr_val.front() == '"' && curr_val.back() == '"') {
+        curr_val = curr_val.substr(1, curr_val.size() - 2);
     }
 
-    std::cout<<curr_key<<std::endl;
-    std::cout<<curr_val<<std::endl;
+    if (curr_key.empty() || curr_val.empty()) {
+        return out_err(out, ERR_BAD_ARG, "invalid key or value");
+    }
 
+    // Lookup key in the hashtable
     LookupKey key;
     key.key = curr_key;
     key.node.hcode = str_hash((uint8_t *)key.key.data(), key.key.size());
-
-    // hashtable lookup
     HNode *node = hm_lookup(&g_data.db, &key.node, &entry_eq);
-    if (node)
-    {
-        // found, update the value
+
+    if (node) {
+        // Update existing value
         Entry *ent = container_of(node, Entry, node);
-        if (ent->type != T_STR)
-        {
+        if (ent->type != T_STR) {
             return out_err(out, ERR_BAD_TYP, "a non-string value exists");
         }
-        std::string quoted = curr_val;
-        ent->str.swap(quoted);
-    }
-    else
-    {
-        // not found, allocate & insert a new pair
+        ent->str = curr_val;
+    } else {
+        // Insert new key-value pair
         Entry *ent = entry_new(T_STR);
-        ent->key = key.key;
+        ent->key = curr_key;
         ent->node.hcode = key.node.hcode;
-        std::string quoted = curr_val;
-        ent->str.swap(quoted);
+        ent->str = curr_val;
         hm_insert(&g_data.db, &ent->node);
     }
+
     return out_nil(out);
 }
 

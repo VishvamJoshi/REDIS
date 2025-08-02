@@ -175,7 +175,6 @@ std::string read_str(const uint8_t*& p) {
     return s;
 }
 
-// Recursive protocol parser
 
 // Recursive protocol parser
 void print_value(const uint8_t*& p, int indent = 0) {
@@ -259,6 +258,104 @@ bool send_command(SOCKET sock, const std::vector<std::string>& cmd) {
         std::cerr << "send() failed" << std::endl;
         return false;
     }
+
+    if (cmd[0] == "SUBSCRIBE" || cmd[0] == "subscribe") {
+
+
+
+        std::cout << "Subscribed to channel(s). Waiting for messages..." << std::endl;
+
+
+        while (true) {
+
+
+            uint8_t header[4];
+
+
+            int recvd = 0;
+
+
+            while (recvd < 4) {
+
+
+                int r = recv(sock, (char*)header + recvd, 4 - recvd, 0);
+
+
+                if (r <= 0) {
+
+
+                    std::cerr << "recv() header failed" << std::endl;
+
+
+                    return false;
+
+
+                }
+
+
+                recvd += r;
+
+
+            }
+
+
+
+
+
+            uint32_t resp_len;
+
+
+            memcpy(&resp_len, header, 4);
+
+
+            if (resp_len > 0) {
+
+
+                std::vector<uint8_t> response(resp_len);
+
+
+                recvd = 0;
+
+
+                while (recvd < (int)resp_len) {
+
+
+                    int r = recv(sock, (char*)response.data() + recvd, resp_len - recvd, 0);
+
+
+                    if (r <= 0) {
+
+
+                        std::cerr << "recv() body failed" << std::endl;
+
+
+                        return false;
+
+
+                    }
+
+
+                    recvd += r;
+
+
+                }
+
+
+                const uint8_t* p = response.data();
+
+
+                print_value(p);
+
+
+            }
+
+
+        }
+
+
+    }
+
+
 
     // Receive response
     uint8_t header[4];
@@ -359,7 +456,7 @@ int main(int argc, char* argv[]) {
         WSACleanup();
         return 0;
     }
-    
+
     std::string line;
     while (true) {
         std::cout << "> ";

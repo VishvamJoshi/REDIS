@@ -17,7 +17,7 @@ The server is optimized for high throughput and low latency. Benchmarks were con
 
 | Metric              | SET Command         | GET Command         |
 | ------------------- | ------------------- | ------------------- |
-| **Throughput** | **~2,500 ops/sec** | **~8,100 ops/sec** |
+| **Throughput** | **~8,400 ops/sec** | **~8,100 ops/sec** |
 | **Average Latency** | -                   | **~0.123 ms** |
 | **p99 Latency** | -                   | **~0.224 ms** |
 
